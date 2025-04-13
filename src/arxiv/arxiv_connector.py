@@ -1,7 +1,17 @@
 from datetime import datetime, timedelta
 import feedparser
 import requests
+from pydantic import BaseModel
+from typing import Optional, List
 
+class ArxivPDF(BaseModel):
+    id: str
+    title: str
+    authors: List[str]
+    link: str
+    abstract: str
+    categories: Optional[List[str]]
+    published: Optional[datetime]
 
 class ArxivConnector:
 
@@ -33,7 +43,7 @@ class ArxivConnector:
         self.start = start
         return self
 
-    def execute_query(self):
+    def execute_query(self) -> List[ArxivPDF]:
 
         query = f"start={self.start}&max_results={self.max_results}" 
         if self.id_list is not None:
@@ -48,25 +58,28 @@ class ArxivConnector:
         arxiv_feed = requests.get(url).text
         arxiv_docs = feedparser.parse(arxiv_feed)
 
+        pdfs = []
         for entry in arxiv_docs.entries:
-            print(entry.id)
-            print(entry.published)
-            print(entry.title)
-            print(entry.authors)
+            
+            pdf_link = ""
             for link in entry.links:
-                if link.rel == 'alternate':
-                    print(link.href)
-                elif link.title == 'pdf':
-                    print(link.href)
-            all_categories = [t['term'] for t in entry.tags]
-            print(all_categories)
-            print(entry.summary)
-            print("\n\n")
+                try:
+                    if link.title == 'pdf':
+                        pdf_link = link.href
+                except AttributeError:
+                    pass
 
+            pdfs.append(ArxivPDF(
+                id=entry.id,
+                title=entry.title.replace("\n", ""),
+                authors=[author["name"] for author in entry.authors][:10],
+                link=pdf_link,
+                categories=[t['term'] for t in entry.tags][:10],
+                abstract=entry.summary.replace("\n", ""),
+                published=entry.published
+            ))
+            print(pdfs[-1])
+            break
+        
+        return pdfs
 
-if __name__ == "__main__":
-
-        arxiv = ArxivConnector()
-        arxiv.set_query_by_dates(datetime.now() - timedelta(days=3), datetime.now())
-
-        arxiv.execute_query()
