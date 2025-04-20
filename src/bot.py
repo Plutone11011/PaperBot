@@ -1,16 +1,14 @@
 
-from telegram.ext import Application
 from telegram.constants import ParseMode
 import logging
-from zoneinfo import ZoneInfo
 import os
-from datetime import time
+
 
 from datetime import datetime, timedelta
-import dotenv
 
 
 from src.arxiv.arxiv_connector import ArxivConnector
+
 
 
 logger = logging.getLogger()
@@ -28,7 +26,7 @@ def run_daily_arxiv_query():
     return pdfs
 
 
-async def send_query_result(application):
+async def send_query_result(application, channel_id):
     pdfs = run_daily_arxiv_query()
 
     for pdf in pdfs:
@@ -43,23 +41,4 @@ async def send_query_result(application):
 {','.join(pdf.categories)}
 Published: {pdf.published}"""
 
-        await application.bot.send_message(chat_id=os.getenv("CHANNEL_ID"), text=text, parse_mode=ParseMode.HTML)
-
-
-def main():
-    logging.info("Setting up bot")
-    application = Application.builder().token(os.getenv("BOT_TOKEN")).build()
-
-    # Schedule the task daily at 12:00 (UTC+2)
-    application.job_queue.run_daily(
-        send_query_result,
-        time=time(hour=15, minute=3, tzinfo=ZoneInfo("Europe/Berlin")),  # 12:00
-        name="daily_query"
-    )
-
-    logging.info("Polling..")
-    application.run_polling()
-
-if __name__ == "__main__":
-    dotenv.load_dotenv()
-    main()
+        await application.bot.send_message(chat_id=channel_id, text=text, parse_mode=ParseMode.HTML)
