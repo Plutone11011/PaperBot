@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 import feedparser
 import requests
+import logging
+import time
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -19,9 +21,10 @@ class ArxivConnector:
 
         self.base_url = "http://export.arxiv.org/api/query?"
         self.submitted_date = None
-        self.max_results = 10
+        self.max_results = 5
         self.id_list = None
         self.start = 0
+
     
 
     def set_query_by_dates(self, start_date: datetime, end_date: datetime):
@@ -43,6 +46,22 @@ class ArxivConnector:
         self.start = start
         return self
 
+    def execute_paginated_query(self):
+
+        pdfs = self.execute_query()
+        prev_pdfs = []
+        while len(pdfs) - len(prev_pdfs) > 0:
+            # time.sleep(10)
+            self.start += self.max_results
+            prev_pdfs.extend(pdfs)
+            pdfs.extend(self.execute_query())
+            logging.info(f"Length of PDFs retrieved {len(pdfs)}")
+
+        
+        return pdfs
+
+
+
     def execute_query(self) -> List[ArxivPDF]:
 
         query = f"start={self.start}&max_results={self.max_results}" 
@@ -54,6 +73,8 @@ class ArxivConnector:
             search_query = f"search_query=submittedDate:{self.submitted_date}"
 
         url = f"{self.base_url}{query}" +  f"&{search_query}" if search_query is not None else ""
+        
+        logging.info(f"Querying {url}")
         
         arxiv_feed = requests.get(url).text
         arxiv_docs = feedparser.parse(arxiv_feed)
@@ -78,8 +99,7 @@ class ArxivConnector:
                 abstract=entry.summary.replace("\n", ""),
                 published=entry.published
             ))
-            print(pdfs[-1])
-            break
+            
         
         return pdfs
 

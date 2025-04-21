@@ -1,9 +1,6 @@
 
 from telegram.constants import ParseMode
 import logging
-import os
-
-
 from datetime import datetime, timedelta
 
 
@@ -11,16 +8,13 @@ from src.arxiv.arxiv_connector import ArxivConnector
 
 
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
 
 # Dummy query function you assume is already implemented
 def run_daily_arxiv_query():
     arxiv = ArxivConnector()
-    arxiv.set_query_by_dates(datetime.now() - timedelta(days=4), datetime.now())
+    arxiv.set_query_by_dates(datetime.now() - timedelta(days=5), datetime.now())
 
-    pdfs = arxiv.execute_query()
+    pdfs = arxiv.execute_paginated_query()
     
     logging.info(f"Retrieved {len(pdfs)} papers")
     return pdfs

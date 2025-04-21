@@ -14,7 +14,8 @@ logging.basicConfig(
 )
 
 
-def lambda_handler(event, context):
+def main():
+    
     
     logging.info("Pulling secrets")
     secrets = get_secrets_telegram()
@@ -30,7 +31,5 @@ def lambda_handler(event, context):
 
     return "OK"
 
-    
-    
-
-
+if __name__ == "__main__":
+    main()
