@@ -6,27 +6,26 @@ from telegram.ext import Application
 from src.bot import send_query_result
 from src.secret import get_secrets_telegram
 
+logger = logging.getLogger()
+logger.setLevel("INFO")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 
 
 def lambda_handler(event, context):
     
-    logging.info("Pulling secrets")
+
+    
+    logger.info("Pulling secrets")
     secrets = get_secrets_telegram()
 
-    logging.info("Setting up bot")
+    logger.info("Setting up bot")
     application = Application.builder().token(secrets["BOT_TOKEN"]).build()
 
     try:
         asyncio.run(send_query_result(application, secrets["CHANNEL_ID"]))
     except Exception as e:
         # TODO differentiate errors
-        logging.error(f"There was an error in sending content to channel {e}")
+        logger.error(f"There was an error in sending content to channel {e}")
 
     return "OK"
 
