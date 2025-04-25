@@ -17,7 +17,7 @@ def main():
     secrets = get_secrets_telegram()
 
     logger.info("Setting up bot")
-    application = Application.builder().token(secrets["BOT_TOKEN"]).build()
+    application = Application.builder().read_timeout(120).connect_timeout(120).token(secrets["BOT_TOKEN"]).build()
 
     try:
         asyncio.run(send_query_result(application, secrets["CHANNEL_ID"]))
