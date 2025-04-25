@@ -51,7 +51,7 @@ class ArxivConnector:
         pdfs = self.execute_query()
         prev_pdfs = []
         while len(pdfs) - len(prev_pdfs) > 0:
-            # time.sleep(10)
+            time.sleep(10)
             self.start += self.max_results
             prev_pdfs.extend(pdfs)
             pdfs.extend(self.execute_query())
