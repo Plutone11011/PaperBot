@@ -17,3 +17,8 @@ Resources:
       Runtime: python3.12
       Policies:
         SecretsManagerReadWrite
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties: 
+            Schedule: cron(45 9 * * ? *)
