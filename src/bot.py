@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timedelta
 import time
 
-from src.arxiv.arxiv_connector import ArxivConnector
+from src.arxiv.arxiv_connector import ArxivConnector, ArxivCategories
 
 
 
@@ -12,7 +12,7 @@ from src.arxiv.arxiv_connector import ArxivConnector
 # Dummy query function you assume is already implemented
 def run_daily_arxiv_query():
     arxiv = ArxivConnector()
-    arxiv.set_query_by_dates(datetime.now() - timedelta(days=5), datetime.now())
+    arxiv.set_query_by_dates(datetime.now() - timedelta(days=1), datetime.now()).set_categories([arxiv_category.value for arxiv_category in ArxivCategories])
 
     pdfs = arxiv.execute_paginated_query()
     

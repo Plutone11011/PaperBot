@@ -1,10 +1,21 @@
 from datetime import datetime, timedelta
+from enum import StrEnum
 import feedparser
 import requests
 import logging
 import time
+import urllib
 from pydantic import BaseModel
 from typing import Optional, List
+
+class ArxivCategories(StrEnum):
+    AI='cs.AI'
+    ComputerVision='cs.CV'
+    MachineLearning='cs.LG'
+    MultiAgentSystems='cs.MA'
+    EvolutionaryComputing='cs.NE'
+    StatisticalML='stat.ML'
+
 
 class ArxivPDF(BaseModel):
     id: str
@@ -24,7 +35,7 @@ class ArxivConnector:
         self.max_results = 5
         self.id_list = None
         self.start = 0
-
+        self.accepted_categories = []
     
 
     def set_query_by_dates(self, start_date: datetime, end_date: datetime):
@@ -45,6 +56,12 @@ class ArxivConnector:
     def set_start(self, start: int):
         self.start = start
         return self
+
+
+    def set_categories(self, categories: list):
+        self.accepted_categories = categories
+        return self
+
 
     def execute_paginated_query(self):
 
@@ -68,12 +85,12 @@ class ArxivConnector:
         if self.id_list is not None:
             query += f"&id_list={self.id_list}"
 
-        search_query = None
+        search_query = f"search_query=cat:{" OR ".join(self.accepted_categories)}"
         if self.submitted_date:
-            search_query = f"search_query=submittedDate:{self.submitted_date}"
+            search_query += f"&submittedDate:{self.submitted_date}"
 
         url = f"{self.base_url}{query}" +  f"&{search_query}" if search_query is not None else ""
-        
+        url = urllib.parse.quote(url, safe='[]:/?&=')
         logging.info(f"Querying {url}")
         
         arxiv_feed = requests.get(url).text
