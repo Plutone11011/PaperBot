@@ -85,12 +85,11 @@ class ArxivConnector:
         if self.id_list is not None:
             query += f"&id_list={self.id_list}"
 
-        search_query = f"search_query=cat:{" OR ".join(self.accepted_categories)}"
+        search_query = f"search_query=cat:{"+OR+".join(self.accepted_categories)}"
         if self.submitted_date:
-            search_query += f"&submittedDate:{self.submitted_date}"
+            search_query += f"+AND+submittedDate:{self.submitted_date}"
 
         url = f"{self.base_url}{query}" +  f"&{search_query}" if search_query is not None else ""
-        url = urllib.parse.quote(url, safe='[]:/?&=')
         logging.info(f"Querying {url}")
         
         arxiv_feed = requests.get(url).text
