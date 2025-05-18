@@ -4,7 +4,7 @@ import feedparser
 import requests
 import logging
 import time
-import urllib
+import wordninja
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -106,13 +106,15 @@ class ArxivConnector:
                 except AttributeError:
                     pass
 
+            summary = entry.summary.replace("\n", "")
+            summary = " ".join(wordninja.split(summary))
             pdfs.append(ArxivPDF(
                 id=entry.id,
                 title=entry.title.replace("\n", ""),
                 authors=[author["name"] for author in entry.authors][:10],
                 link=pdf_link,
                 categories=[t['term'] for t in entry.tags][:10],
-                abstract=entry.summary.replace("\n", ""),
+                abstract=summary,
                 published=entry.published
             ))
             
