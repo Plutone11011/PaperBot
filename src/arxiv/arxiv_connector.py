@@ -107,7 +107,6 @@ class ArxivConnector:
                     pass
 
             summary = entry.summary.replace("\n", "")
-            summary = " ".join(wordninja.split(summary))
             pdfs.append(ArxivPDF(
                 id=entry.id,
                 title=entry.title.replace("\n", ""),
